@@ -16,7 +16,7 @@ import (
 
 var mfuncs = map[string]interface{}{
 	"deploy:prepare": cmdDep.Prepare,
-	"deploy:install": cmdDep.Prepare,
+	"deploy:fetch":   cmdDep.Fetch,
 	"deploy:shared":  cmdDep.Prepare,
 	"deploy:vendors": cmdDep.Prepare,
 	"deploy:migrate": cmdDep.Prepare,
@@ -70,11 +70,11 @@ func (d *deploy) exec() error {
 	}
 	t := task.New(r, d.log)
 	d.commands(t, "deploy:prepare")
-	d.commands(t, "deploy:install")
-	d.commands(t, "deploy:shared")
-	d.commands(t, "deploy:vendors")
-	d.commands(t, "deploy:migrate")
-	d.commands(t, "deploy:release")
+	d.commands(t, "deploy:fetch")
+	// d.commands(t, "deploy:shared")
+	// d.commands(t, "deploy:vendors")
+	// d.commands(t, "deploy:migrate")
+	// d.commands(t, "deploy:release")
 	success := color.New(color.FgHiGreen, color.Bold).PrintlnFunc()
 	success("Successfully deployed!")
 
@@ -88,9 +88,9 @@ func (d *deploy) commands(t *task.Task, cmds string) error {
 	sp.Color("fgHiGreen")
 	sp.FinalMSG = fmt.Sprintf("%s [%s]:	Completed!\n", green("✔"), cmds)
 	sp.Start()
-	_, err := utils.Call(mfuncs, cmds, t)
-	if err != nil {
-		log.Fatal(err)
+	out, _ := utils.Call(mfuncs, cmds, t)
+	if !out[0].IsNil() {
+		log.Fatalf("Error: %v", out[0].Interface())
 	}
 	sp.Stop()
 
